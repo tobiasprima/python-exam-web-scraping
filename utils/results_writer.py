@@ -1,46 +1,34 @@
 import csv
 import json
 import pandas as pd
-from pathlib import Path
 from typing import Any
-from datetime import datetime
+from utils.file_manager import FileManager
 
-def save_results(results: list[dict[str, Any]], output_dir: str, case_name: str, dataset_type: str, unique_id: str | None = None):
-    """
-    Save results to CSV, JSON, XLSX in a case-specific folder.
-    
-    - case_name: typically "date_from_to_date_to"
-    - dataset_type: "results" or "details"
-    - unique_id: optional extra identifier (e.g., case_id, suburb).
-                 If None, falls back to timestamp.
-    """
-    
-    if not results:
-        return
-        
-    all_keys = sorted({k for row in results for k in row.keys()})
+class ResultsWriter:
+    def __init__(self, file_manager: FileManager):
+        self.file_manager = file_manager
 
-    # Build unique folder name
-    safe_id = unique_id or datetime.now().strftime("%Y%m%d_%H%M%S")
-    case_dir = Path(output_dir) / f"{case_name}_{safe_id}"
-    case_dir.mkdir(parents=True, exist_ok=True)
-    
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    base_filename = f"{dataset_type}_{timestamp}"
+    def save_all(self, results: list[dict[str, Any]], dataset_type: str) -> None:
+        if not results:
+            return
+        keys = sorted({k for row in results for k in row.keys()})
+        self._save_csv(results, dataset_type, keys)
+        self._save_json(results, dataset_type)
+        self._save_xlsx(results, dataset_type)
 
-    # Save CSV
-    csv_file = case_dir / f"{base_filename }.csv"
-    with open(csv_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=all_keys)
-        writer.writeheader()
-        writer.writerows(results)
+    def _save_csv(self, results: list[dict[str, Any]], dataset_type: str, keys: list[str]) -> None:
+        path = self.file_manager.get_filename(dataset_type, "csv")
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=keys)
+            writer.writeheader()
+            writer.writerows(results)
 
-    # Save JSON
-    json_file = case_dir / f"{base_filename }.json"
-    with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+    def _save_json(self, results: list[dict[str, Any]], dataset_type: str) -> None:
+        path = self.file_manager.get_filename(dataset_type, "json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
 
-    # Save XLSX
-    xlsx_file = case_dir / f"{base_filename }.xlsx"
-    df = pd.DataFrame(results)
-    df.to_excel(xlsx_file, index=False)
+    def _save_xlsx(self, results: list[dict[str, Any]], dataset_type: str) -> None:
+        path = self.file_manager.get_filename(dataset_type, "xlsx")
+        df = pd.DataFrame(results)
+        df.to_excel(path, index=False)
