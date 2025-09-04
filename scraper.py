@@ -4,6 +4,7 @@ from utils.page_factory import PageFactory
 from utils.logger import get_logger
 from utils.browser_manager import BrowserManager
 from utils.config import Config
+from utils.results_writer import save_results
 
 class MelbourneScraper:
     """Main orchestrator for scraping."""
@@ -25,6 +26,7 @@ class MelbourneScraper:
                     try:
                         date_from = row.get("date_from", "")
                         date_to = row.get("date_to", "")
+                        unique_id = row.get("id")
                         
                         case_name = f"{date_from}_to_{date_to}"
                         self.logger = get_logger(self.__class__.__name__, case_name)
@@ -36,16 +38,11 @@ class MelbourneScraper:
                         await search_page.search(date_from, date_to)
 
                         results_page = PageFactory.get_page(page, "results", case_name)
-                        urls: list[str] = await results_page.get_results()
-
-                        for url in urls:
-                            await page.goto(url)
-                            details_page = PageFactory.get_page(page, "details", case_name)
-                            data: dict[str, str] = await details_page.scrape_details()
-                            self.logger.info(f"Scraped data: {data}")
+                        results = await results_page.get_results("https://www.melbourne.vic.gov.au")
+                        
+                        save_results(results, self.config.output_dir, case_name, "results", unique_id)
                     finally:
                         await page.close()
             
             tasks = [scrape_row(row) for row in rows]
             await asyncio.gather(*tasks)
-

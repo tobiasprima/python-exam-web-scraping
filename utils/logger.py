@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from datetime import datetime
+import datetime
 
 def get_logger(class_name: str, case_name: str | None = None) -> logging.Logger:
     """
