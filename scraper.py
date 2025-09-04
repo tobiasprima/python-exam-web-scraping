@@ -41,6 +41,25 @@ class MelbourneScraper:
                         results = await results_page.get_results("https://www.melbourne.vic.gov.au")
                         
                         save_results(results, self.config.output_dir, case_name, "results", unique_id)
+                        
+                        details = []
+                        details_sem = asyncio.Semaphore(self.config.details_concurrency)
+                        
+                        async def scrape_detail(r: dict[str, Any]):
+                            async with details_sem:
+                                detail_page = await bm.new_page()
+                                try:
+                                    await detail_page.goto(r["url"])
+                                    dp = PageFactory.get_page(detail_page, "details", case_name)
+                                    detail_data = await dp.scrape_details(r["url"])
+                                    details.append(detail_data)
+                                finally:
+                                    await detail_page.close()
+
+                        await asyncio.gather(*(scrape_detail(r) for r in results))
+
+                        save_results(details, self.config.output_dir, case_name, "details", unique_id)
+
                     finally:
                         await page.close()
             
