@@ -1,0 +1,2 @@
+from locators.search_page_locators import SearchPageLocators
+from locators.result_page_locators import ResultPageLocators
