@@ -21,7 +21,7 @@ class DetailsPage(BasePage):
                     key_norm = normalize_key(key)
                     details[key_norm] = value
 
-        # Build final dict with id first
+        # Build final dict
         result: dict[str, Any] = {}
         if "application_number" in details:
             result["id"] = details.pop("application_number")

@@ -17,6 +17,11 @@ class MelbourneScraper:
         self.base_url: str = self.DEFAULT_BASE_URL
     
     async def run(self, rows: list[dict[str, Any]]) -> None:
+        """
+        Entry point: process all rows from CSV input.
+
+        :param rows: List of dicts containing at least date_from, date_to, and id.
+        """
         print(f"Processing {len(rows)} rows...")
 
         async with BrowserManager(headless=self.config.headless) as bm:
@@ -25,6 +30,13 @@ class MelbourneScraper:
             await asyncio.gather(*tasks)
 
     async def _scrape_row(self, row: dict[str, Any], bm: BrowserManager, sem: asyncio.Semaphore) -> None:
+        """
+        Scrape a single search case (row from CSV).
+
+        :param row: Dictionary containing row inputs (date_from, date_to, etc.).
+        :param bm: BrowserManager instance controlling the browser.
+        :param sem: Semaphore limiting concurrent contexts per browser.
+        """
         async with sem:
             page = await bm.new_page()
             try:
@@ -53,6 +65,14 @@ class MelbourneScraper:
                 await page.close()
 
     async def _scrape_details(self, bm: BrowserManager, results: list[dict[str, Any]], case_name: str) -> list[dict[str, Any]]:
+        """
+        Visit each result URL and scrape details.
+
+        :param bm: BrowserManager for creating pages.
+        :param results: List of result dicts from ResultsPage (must include "url").
+        :param case_name: Used for logger scoping.
+        :return: List of detail dicts.
+        """
         details = []
         sem = asyncio.Semaphore(self.config.details_concurrency)
 
