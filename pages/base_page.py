@@ -1,12 +1,13 @@
+import logging
 from playwright.async_api import Page
 from utils.logger import get_logger
 
 class BasePage:
     """Base class with common Playwright actions."""
 
-    def __init__(self, page: Page):
+    def __init__(self, page: Page, case_name: str):
         self.page = page
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(self.__class__.__name__, case_name)
         
     async def _wait_for_element(self, selector, timeout: int = 10000):
         """Wait for element, with 10000 default timeout"""

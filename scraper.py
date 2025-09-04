@@ -11,12 +11,11 @@ class MelbourneScraper:
     DEFAULT_BASE_URL = "https://www.melbourne.vic.gov.au/planning-permit-register"
 
     def __init__(self, config: Config)-> None:
-        self.logger = get_logger(self.__class__.__name__)
         self.config = config
         self.base_url: str = self.DEFAULT_BASE_URL
     
     async def run(self, rows: list[dict[str, Any]])-> None:
-        self.logger.info(f"Processing {len(rows)} rows...")
+        print(f"Processing {len(rows)} rows...")
 
         async with BrowserManager(headless=self.config.headless) as bm:
             sem = asyncio.Semaphore(self.config.contexts_per_browser)
@@ -26,19 +25,22 @@ class MelbourneScraper:
                     try:
                         date_from = row.get("date_from", "")
                         date_to = row.get("date_to", "")
+                        
+                        case_name = f"{date_from}_to_{date_to}"
+                        self.logger = get_logger(self.__class__.__name__, case_name)
                         self.logger.info(f"Scraping row with date_from={date_from}, date_to={date_to}")
 
                         await page.goto(self.base_url)
 
-                        search_page = PageFactory.get_page(page, "search")
+                        search_page = PageFactory.get_page(page, "search", case_name)
                         await search_page.search(date_from, date_to)
 
-                        results_page = PageFactory.get_page(page, "results")
+                        results_page = PageFactory.get_page(page, "results", case_name)
                         urls: list[str] = await results_page.get_results()
 
                         for url in urls:
                             await page.goto(url)
-                            details_page = PageFactory.get_page(page, "details")
+                            details_page = PageFactory.get_page(page, "details", case_name)
                             data: dict[str, str] = await details_page.scrape_details()
                             self.logger.info(f"Scraped data: {data}")
                     finally:

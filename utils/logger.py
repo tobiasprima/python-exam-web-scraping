@@ -2,18 +2,30 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
-def get_logger(name: str) -> logging.Logger:
+def get_logger(class_name: str, case_name: str | None = None) -> logging.Logger:
+    """
+    Create or get a logger.
+    If case_name is provided, logs go into logs/<case_name>/scraper_<timestamp>.log.
+    """
     logs_dir = Path("logs")
-    logs_dir.mkdir(exist_ok=True)
+    if case_name:
+        # sanitize directory name
+        safe_case = case_name.replace(" ", "_").replace("/", "-")
+        logs_dir = logs_dir / safe_case
 
-    log_file = logs_dir / f"scraper_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-    logger = logging.getLogger(name)
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    log_file = logs_dir / f"{class_name}.log"
+    logger = logging.getLogger(f"{class_name}_{case_name or 'default'}")
 
     if not logger.handlers:
         logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(log_file)
-        formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        handler = logging.FileHandler(log_file, encoding="utf-8")
+        formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
     return logger
+

@@ -6,11 +6,11 @@ class PageFactory:
     """Factory to return the correct page object."""
 
     @staticmethod
-    def get_page(page, page_type: str):
+    def get_page(page, page_type: str, case_name: str):
         if page_type == "search":
-            return SearchPage(page)
+            return SearchPage(page, case_name)
         if page_type == "results":
-            return ResultsPage(page)
+            return ResultsPage(page, case_name)
         if page_type == "details":
-            return DetailsPage(page)
+            return DetailsPage(page, case_name)
         raise ValueError(f"Unknown page type: {page_type}")
