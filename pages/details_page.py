@@ -1,7 +1,7 @@
 import datetime
 from typing import Any
 
-from utils.key_normalizer import normalize_key
+from utils.helpers import normalize_key
 from .base_page import BasePage
 
 class DetailsPage(BasePage):
