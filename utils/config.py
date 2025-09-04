@@ -8,6 +8,7 @@ class Config(BaseModel):
     csv_delimiter: str = ","
     threads: int = 1
     contexts_per_browser: int = 5
+    details_concurrency: int = 10,
     headless: bool = True
 
 def load_config(config_file: str = "config.json") -> Config:

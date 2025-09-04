@@ -4,5 +4,6 @@
   "csv_delimiter": ",",
   "threads": 4,
   "contexts_per_browser": 25,
+  "details_concurrency": 5,
   "headless": false 
 }
