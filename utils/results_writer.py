@@ -14,6 +14,12 @@ def save_results(results: list[dict[str, Any]], output_dir: str, case_name: str,
     - unique_id: optional extra identifier (e.g., case_id, suburb).
                  If None, falls back to timestamp.
     """
+    
+    if not results:
+        return
+        
+    all_keys = sorted({k for row in results for k in row.keys()})
+
     # Build unique folder name
     safe_id = unique_id or datetime.now().strftime("%Y%m%d_%H%M%S")
     case_dir = Path(output_dir) / f"{case_name}_{safe_id}"
@@ -25,7 +31,7 @@ def save_results(results: list[dict[str, Any]], output_dir: str, case_name: str,
     # Save CSV
     csv_file = case_dir / f"{base_filename }.csv"
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["id", "url", "date_collected"])
+        writer = csv.DictWriter(f, fieldnames=all_keys)
         writer.writeheader()
         writer.writerows(results)
 
