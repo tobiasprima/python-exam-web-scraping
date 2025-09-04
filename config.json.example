@@ -1,9 +1,8 @@
 {
-  "base_url": "https://www.melbourne.vic.gov.au/planning-permit-register",
   "output_dir": "output/",
   "csv_path": "input.csv",
   "csv_delimiter": ",",
-  "date_from": "2025-01-01",
-  "date_to": "2025-09-01",
-  "threads": 2
+  "threads": 4,
+  "contexts_per_browser": 25,
+  "headless": false // For Debugging
 }
