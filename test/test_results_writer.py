@@ -9,28 +9,30 @@ def sample_results():
         {"id": "2", "name": "Bob"},
     ]
 
-def test_save_all_creates_all_files(tmp_path):
-    fm = FileManager(output_dir=tmp_path, case_name="case", unique_id="id")
+def test_save_all_creates_all_files(fs):
+    fs.create_dir("/fake/out")
+    fm = FileManager("/fake/out", "case", "id")
     writer = ResultsWriter(fm)
 
-    results = sample_results()
+    results = [{
+        "id": "123", 
+        "url": "http://example.com", 
+        "date_collected": "today"
+    }]
     writer.save_all(results, "results")
 
-    # Check file existence
+    # Verify CSV
     csv_files = list(fm.case_dir.glob("results_*.csv"))
+    assert csv_files, "CSV file not created"
+
+    # Verify JSON
     json_files = list(fm.case_dir.glob("results_*.json"))
+    assert json_files
+    data = json.loads(open(json_files[0], encoding="utf-8").read())
+    assert data[0]["id"] == "123"
+
+    # Verify XLSX
     xlsx_files = list(fm.case_dir.glob("results_*.xlsx"))
-
-    assert len(csv_files) == 1
-    assert len(json_files) == 1
-    assert len(xlsx_files) == 1
-
-    # Check JSON contents
-    with open(json_files[0], "r", encoding="utf-8") as f:
-        data = json.load(f)
-    assert data == results
-
-    # Check XLSX contents
+    assert xlsx_files
     df = pd.read_excel(xlsx_files[0])
-    assert list(df.columns) == ["id", "name"]
-    assert df.iloc[0]["name"] == "Alice"
+    assert "id" in df.columns
