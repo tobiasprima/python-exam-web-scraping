@@ -118,6 +118,35 @@ output/
 
 ---
 
+🧪 Running Tests
+
+This project uses pytest for unit testing.
+
+1. Run Tests
+
+From the project root:
+
+```bash
+python -m pytest test -v
+```
+2. What is Tested
+```
+utils/helpers.py → key normalization (normalize_key).
+
+utils/file_manager.py → directory creation and filename generation.
+
+utils/results_writer.py → saving results in CSV, JSON, and XLSX formats.
+
+utils/logger.py → create logger function
+
+utils/scraper_factory.py → scraper factory
+
+utils/page_factory.py → page factory
+```
+Pytest will discover files matching test_*.py inside the test/ directory.
+
+---
+
 ## 🔧 Development Notes
 
 * Python version: **3.10**
